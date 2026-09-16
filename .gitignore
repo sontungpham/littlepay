@@ -1,0 +1,15 @@
+# Local secure environment overrides
+env.local.json
+
+# IDE config files
+.idea/
+
+# System / OS files
+.DS_Store
+Thumbs.db
+
+# Node.js dependencies (just in case)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
