@@ -7,10 +7,8 @@ let littlePayInstance = null;
 
 // DOM Elements
 const configForm = document.getElementById('sdk-config-form');
-const tokenModeSelect = document.getElementById('tokenMode');
 const checkoutMethodSelect = document.getElementById('checkoutMethod');
 const autoTokenFields = document.getElementById('auto-token-fields');
-const manualTokenField = document.getElementById('manual-token-field');
 
 // Mode Inputs
 const customerRefInput = document.getElementById('customerRef');
@@ -18,7 +16,6 @@ const orderAmountInput = document.getElementById('orderAmount');
 const orderCurrencyInput = document.getElementById('orderCurrency');
 const metadataRefInput = document.getElementById('metadataRef');
 const mitTypeSelect = document.getElementById('mitType');
-const clientTokenInput = document.getElementById('clientToken');
 
 // Theme Elements
 const primaryColorInput = document.getElementById('primaryColor');
@@ -84,37 +81,9 @@ function setupColorPickers() {
 }
 
 /**
- * Handle Switching between Automatic API Token Mode and Manual Input Mode
- */
-function handleTokenModeChange() {
-    const mode = tokenModeSelect.value;
-    log(`[System] Token mode switched to: ${mode === 'auto' ? 'Automatic API Generation' : 'Manual Token Input'}`, 'system');
-
-    if (mode === 'auto') {
-        autoTokenFields.classList.remove('hidden');
-        manualTokenField.classList.add('hidden');
-        
-        // Update required statuses
-        clientTokenInput.required = false;
-        
-        updateSubmitButtonText();
-    } else {
-        autoTokenFields.classList.add('hidden');
-        manualTokenField.classList.remove('hidden');
-        
-        // Update required statuses
-        clientTokenInput.required = true;
-        
-        submitBtn.textContent = 'Initialize SDK & Register Card';
-    }
-}
-
-/**
  * Updates Submit button based on chosen checkout method
  */
 function updateSubmitButtonText() {
-    if (tokenModeSelect.value === 'manual') return;
-    
     const method = checkoutMethodSelect.value;
     if (method === 'link') {
         submitBtn.textContent = 'Generate Payment Link';
@@ -257,137 +226,12 @@ async function createCheckoutSession() {
 }
 
 /**
- * Activates Simulation Mode Fallback manually or automatically
- */
-function enableSimulationMode() {
-    log('[System] Activating interactive Simulation Mode Fallback...', 'system');
-    
-    const statusText = document.querySelector('.status-text');
-    const statusDot = document.querySelector('.status-dot');
-    if (statusText) {
-        statusText.textContent = 'Simulation Mode (Offline)';
-        statusText.style.color = '#f59e0b';
-    }
-    if (statusDot) {
-        statusDot.style.backgroundColor = '#f59e0b';
-        statusDot.style.boxShadow = '0 0 8px #f59e0b';
-    }
-
-    // Assign mock LittlePay object
-    window.LittlePay = function(config) {
-        log('[Simulated SDK] window.LittlePay initialized with playground config.', 'callback');
-        
-        let mounted = true;
-        const targetElement = document.getElementById(config.targetElementId);
-
-        return {
-            registerCard: function(errorCallback, successCallback) {
-                if (!mounted) {
-                    log('[Simulated SDK] Error: registerCard called on unmounted instance.', 'error');
-                    return;
-                }
-                log('[Simulated SDK] Rendering custom simulated card form...', 'system');
-                
-                const btnBg = config.options?.theme?.button?.backgroundColor || '#ed7625';
-                const btnColor = config.options?.theme?.button?.color || '#ffffff';
-                const btnRadius = config.options?.theme?.button?.borderRadius || '6px';
-                const textColor = config.options?.theme?.color || '#2d3748';
-                const bgColor = config.options?.theme?.backgroundColor || '#ffffff';
-                const extraFields = config.options?.cardholderDetailFields || 'HIDE';
-
-                targetElement.innerHTML = `
-                    <div class="mock-sdk-form" style="background-color: ${bgColor}; color: ${textColor}; padding: 24px; border-radius: 8px; font-family: ${config.options?.theme?.fontFamily || 'inherit'}; box-shadow: var(--shadow-sm); animation: fadeIn 0.3s ease; border: 1px solid var(--border-color); text-align: left;">
-                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: ${textColor};">
-                            <span style="display: flex; align-items: center; gap: 6px;">🔒 Secure Card Details</span>
-                            <span style="font-size: 0.65rem; background: #feebc8; color: #c05621; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Simulated Form</span>
-                        </h4>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-                            <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">Cardholder Name</label>
-                            <input type="text" id="mock-cardname" placeholder="John Doe" value="John Doe" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-                            <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">Card Number</label>
-                            <input type="text" id="mock-cardnumber" placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">Expiry (MM/YY)</label>
-                                <input type="text" id="mock-expiry" placeholder="12/29" value="12/29" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">CVV</label>
-                                <input type="text" id="mock-cvv" placeholder="123" value="123" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                            </div>
-                        </div>
-
-                        ${extraFields === 'DISPLAY' ? `
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; border-top: 1px dashed var(--border-color); padding-top: 16px;">
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">Email Address</label>
-                                <input type="text" id="mock-email" placeholder="customer@example.com" value="customer@example.com" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <label style="font-size: 0.8rem; font-weight: 600; color: ${textColor};">Phone Number</label>
-                                <input type="text" id="mock-phone" placeholder="+44 7700 900077" value="+44 7700 900077" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; color: ${textColor}; background-color: ${bgColor}; width: 100%;">
-                            </div>
-                        </div>
-                        ` : ''}
-
-                        <button id="btn-mock-submit" style="background-color: ${btnBg}; color: ${btnColor}; border-radius: ${btnRadius}; width: 100%; padding: 12px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <span>Register Card</span>
-                        </button>
-                    </div>
-                `;
-
-                const submitBtn = document.getElementById('btn-mock-submit');
-                submitBtn.addEventListener('click', () => {
-                    log('[Simulated SDK] Submit clicked. Initiating secure register transaction...', 'callback');
-                    submitBtn.disabled = true;
-                    submitBtn.style.opacity = '0.75';
-                    submitBtn.innerHTML = `
-                        <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                        <span>Processing Securely...</span>
-                    `;
-                    
-                    if (!document.getElementById('spinner-style')) {
-                        const styleNode = document.createElement('style');
-                        styleNode.id = 'spinner-style';
-                        styleNode.textContent = `
-                            @keyframes spin { 100% { transform: rotate(360deg); } }
-                            @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-                        `;
-                        document.head.appendChild(styleNode);
-                    }
-                    
-                    setTimeout(() => {
-                        const mockPaymentIntentId = 'pi_sim_' + Math.random().toString(36).substring(2, 15);
-                        log(`[Simulated SDK] Card successfully registered. Generated Payment Intent: ${mockPaymentIntentId}`, 'success');
-                        log('[Simulated SDK] Triggering successCallback().', 'callback');
-                        successCallback(mockPaymentIntentId);
-                    }, 1500);
-                });
-            },
-            unmount: function() {
-                mounted = false;
-                targetElement.innerHTML = '';
-                log('[Simulated SDK] unmount() called. Resources cleaned up.', 'system');
-            }
-        };
-    };
-}
-
-/**
  * High-level form submission handler
  */
 async function initializeSdkFlow(e) {
     e.preventDefault();
     
     let sessionData = null;
-    const mode = tokenModeSelect.value;
-    const chosenMethod = checkoutMethodSelect.value;
     
     // UI Loading state
     const originalBtnText = submitBtn.textContent;
@@ -396,47 +240,14 @@ async function initializeSdkFlow(e) {
 
     cleanupExistingSession();
 
-    if (mode === 'manual') {
-        const clientToken = clientTokenInput.value.trim();
-        if (!clientToken) {
-            log('[Error] Client Token is required for manual initialization.', 'error');
-            alert('Please paste a valid Client Token first.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-            return;
-        }
-        // Construct standard SDK fallback for manual token inputs
-        sessionData = {
-            checkoutMethod: 'sdk',
-            client_token: clientToken,
-            id: 'manual-order',
-            payment_intent_id: 'manual-intent'
-        };
-    } else {
-        // Mode is Auto-Fetch
-        try {
-            sessionData = await createCheckoutSession();
-        } catch (apiError) {
-            // Ask user if they wish to transition to Simulation Mode
-            const proceedSimulation = confirm(
-                `Failed to auto-generate token:\n"${apiError.message}"\n\nWould you like to launch the simulated checkout flow instead?`
-            );
-            
-            if (proceedSimulation) {
-                log('[System] User agreed to fallback. Switching to simulation configuration.', 'system');
-                enableSimulationMode();
-                sessionData = {
-                    checkoutMethod: chosenMethod,
-                    client_token: 'simulated_client_token_placeholder',
-                    url: 'https://checkout.sandbox.littlepay.com/simulated-hosted-checkout'
-                };
-            } else {
-                log('[System] Automatic setup aborted.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-                return;
-            }
-        }
+    try {
+        sessionData = await createCheckoutSession();
+    } catch (apiError) {
+        log(`[Error] Failed to auto-generate token: ${apiError.message}`, 'error');
+        alert(`Failed to auto-generate token:\n"${apiError.message}"`);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+        return;
     }
 
     // Reset UI Panel
@@ -496,7 +307,14 @@ async function initializeSdkFlow(e) {
     // ROUTE B: INLINE SDK (Direct Mount Form)
     // ==========================================
     if (typeof window.LittlePay !== 'function') {
-        enableSimulationMode();
+        const errorMsg = 'Littlepay Checkout SDK script failed to load from CDN. Direct connection testing requires internet access.';
+        log(`[Error] ${errorMsg}`, 'error');
+        alert(errorMsg);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+        sdkPlaceholder.classList.remove('hidden');
+        sdkContainer.classList.add('hidden');
+        return;
     }
 
     // Generate configuration for the SDK
@@ -551,17 +369,16 @@ async function initializeSdkFlow(e) {
 document.addEventListener('DOMContentLoaded', () => {
     setupColorPickers();
     
-    // Attach token mode toggling listener
-    tokenModeSelect.addEventListener('change', handleTokenModeChange);
-    
     // Attach checkout method change listener
     checkoutMethodSelect.addEventListener('change', updateSubmitButtonText);
     
-    handleTokenModeChange(); // Run once to sync initial state
+    updateSubmitButtonText(); // Run once to sync initial state
     
     // Check script load status immediately on page load
     if (typeof window.LittlePay !== 'function') {
-        enableSimulationMode();
+        log('[System] Warning: window.LittlePay is not available. Please make sure you are online to load the CDN script.', 'error');
+    } else {
+        log('[System] Littlepay SDK CDN script loaded successfully.', 'success');
     }
     
     configForm.addEventListener('submit', initializeSdkFlow);

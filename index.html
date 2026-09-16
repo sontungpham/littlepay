@@ -36,21 +36,12 @@
             </div>
             
             <form id="sdk-config-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tokenMode">Token Retrieval Mode</label>
-                        <select id="tokenMode">
-                            <option value="auto" selected>Automatic API Generation (Recommended)</option>
-                            <option value="manual">Manual Token Input</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="checkoutMethod">Checkout Method</label>
-                        <select id="checkoutMethod">
-                            <option value="sdk" selected>Littlepay Drop-in SDK (Inline)</option>
-                            <option value="link">Payment Link (Hosted Checkout)</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="checkoutMethod">Checkout Method</label>
+                    <select id="checkoutMethod">
+                        <option value="sdk" selected>Littlepay Drop-in SDK (Inline)</option>
+                        <option value="link">Payment Link (Hosted Checkout)</option>
+                    </select>
                 </div>
 
                 <!-- Automatic Token Fields -->
@@ -88,16 +79,7 @@
                     </div>
                 </div>
 
-                <!-- Manual Token Field -->
-                <div id="manual-token-field" class="hidden">
-                    <div class="form-group">
-                        <label for="clientToken">Client Token <span class="required">*</span></label>
-                        <textarea id="clientToken" rows="5" placeholder="Paste your clientToken here..."></textarea>
-                        <small class="help-text">
-                            Copy the returned <code>client_token</code> from your CreateOrder server-side response.
-                        </small>
-                    </div>
-                </div>
+
 
                 <div class="form-row">
                     <div class="form-group">
