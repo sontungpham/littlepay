@@ -149,23 +149,27 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
-                    // Step 3: PUT payment-intent mit_type
-                    console.log(`[Proxy] Step 3: PUT /payment-intents/${paymentIntentId}/payment-method-options (Add MIT Type)...`);
-                    const optionsRes = await makeHttpsRequest(
-                        `https://checkout.sandbox.littlepay.com/merchant/v1/payment-intents/${paymentIntentId}/payment-method-options`,
-                        'PUT',
-                        {
-                            'Content-Type': 'application/json',
-                            'X-Api-Key': apiKey
-                        },
-                        JSON.stringify({ mit_type: mitType })
-                    );
+                    // Step 3: PUT payment-intent mit_type (conditional)
+                    if (mitType) {
+                        console.log(`[Proxy] Step 3: PUT /payment-intents/${paymentIntentId}/payment-method-options (Add MIT Type)...`);
+                        const optionsRes = await makeHttpsRequest(
+                            `https://checkout.sandbox.littlepay.com/merchant/v1/payment-intents/${paymentIntentId}/payment-method-options`,
+                            'PUT',
+                            {
+                                'Content-Type': 'application/json',
+                                'X-Api-Key': apiKey
+                            },
+                            JSON.stringify({ mit_type: mitType })
+                        );
 
-                    if (optionsRes.statusCode < 200 || optionsRes.statusCode >= 300) {
-                        console.error(`[Proxy] Setting MIT options failed with status ${optionsRes.statusCode}:`, optionsRes.body);
-                        res.writeHead(optionsRes.statusCode, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: `Setting MIT options failed: ${optionsRes.body}` }));
-                        return;
+                        if (optionsRes.statusCode < 200 || optionsRes.statusCode >= 300) {
+                            console.error(`[Proxy] Setting MIT options failed with status ${optionsRes.statusCode}:`, optionsRes.body);
+                            res.writeHead(optionsRes.statusCode, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: `Setting MIT options failed: ${optionsRes.body}` }));
+                            return;
+                        }
+                    } else {
+                        console.log(`[Proxy] Step 3: Skipping PUT /payment-method-options (mitType is null/empty).`);
                     }
 
                     // Step 4: POST /orders/{order_id}/payment-links
@@ -221,26 +225,31 @@ const server = http.createServer((req, res) => {
 
                 } else {
                     // Flow B: SDK INLINE (2 steps)
-                    console.log(`[Proxy] Step 2: PUT /payment-intents/${paymentIntentId}/payment-method-options (Add MIT Type)...`);
-                    
-                    const optionsRes = await makeHttpsRequest(
-                        `https://checkout.sandbox.littlepay.com/merchant/v1/payment-intents/${paymentIntentId}/payment-method-options`,
-                        'PUT',
-                        {
-                            'Content-Type': 'application/json',
-                            'X-Api-Key': apiKey
-                        },
-                        JSON.stringify({ mit_type: mitType })
-                    );
+                    if (mitType) {
+                        console.log(`[Proxy] Step 2: PUT /payment-intents/${paymentIntentId}/payment-method-options (Add MIT Type)...`);
+                        
+                        const optionsRes = await makeHttpsRequest(
+                            `https://checkout.sandbox.littlepay.com/merchant/v1/payment-intents/${paymentIntentId}/payment-method-options`,
+                            'PUT',
+                            {
+                                'Content-Type': 'application/json',
+                                'X-Api-Key': apiKey
+                            },
+                            JSON.stringify({ mit_type: mitType })
+                        );
 
-                    if (optionsRes.statusCode < 200 || optionsRes.statusCode >= 300) {
-                        console.error(`[Proxy] Setting MIT options failed with status ${optionsRes.statusCode}:`, optionsRes.body);
-                        res.writeHead(optionsRes.statusCode, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: `Setting MIT options failed: ${optionsRes.body}` }));
-                        return;
+                        if (optionsRes.statusCode < 200 || optionsRes.statusCode >= 300) {
+                            console.error(`[Proxy] Setting MIT options failed with status ${optionsRes.statusCode}:`, optionsRes.body);
+                            res.writeHead(optionsRes.statusCode, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: `Setting MIT options failed: ${optionsRes.body}` }));
+                            return;
+                        }
+                        console.log(`[Proxy] MIT Setup complete (204).`);
+                    } else {
+                        console.log(`[Proxy] Step 2: Skipping PUT /payment-method-options (mitType is null/empty).`);
                     }
 
-                    console.log(`[Proxy] MIT Setup complete (204). Returning client_token to client.`);
+                    console.log(`[Proxy] Returning client_token to client.`);
 
                     res.writeHead(200, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({
