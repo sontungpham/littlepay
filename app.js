@@ -14,7 +14,6 @@ const autoTokenFields = document.getElementById('auto-token-fields');
 const customerRefInput = document.getElementById('customerRef');
 const orderAmountInput = document.getElementById('orderAmount');
 const orderCurrencyInput = document.getElementById('orderCurrency');
-const metadataRefInput = document.getElementById('metadataRef');
 const mitTypeSelect = document.getElementById('mitType');
 
 // Theme Elements
@@ -186,13 +185,28 @@ async function createCheckoutSession() {
     const customerRef = customerRefInput.value.trim() || '1';
     const amount = parseInt(orderAmountInput.value.trim(), 10) || 811;
     const currency = orderCurrencyInput.value.trim() || 'EUR';
-    const metadataRef = metadataRefInput.value.trim() || 'test-Tung';
     const mitType = mitTypeSelect.value;
     const checkoutMethod = checkoutMethodSelect.value;
     const disableSavedCards = disableSavedSelect.value === 'true';
 
     log(`[Proxy API] Initializing payload for secure local proxy (/api/create-session) in ${checkoutMethod.toUpperCase()} mode...`, 'system');
     
+    // Parse custom dynamic metadata fields
+    const metadata = {};
+    
+    const metadataContainer = document.getElementById('metadata-rows-container');
+    if (metadataContainer) {
+        const keyInputs = metadataContainer.querySelectorAll('.metadata-key');
+        const valueInputs = metadataContainer.querySelectorAll('.metadata-value');
+        keyInputs.forEach((keyInput, index) => {
+            const key = keyInput.value.trim();
+            const val = valueInputs[index].value.trim();
+            if (key) {
+                metadata[key] = val;
+            }
+        });
+    }
+
     const payload = {
         mitType: mitType,
         checkoutMethod: checkoutMethod,
@@ -204,9 +218,7 @@ async function createCheckoutSession() {
                 amount: amount,
                 currency: currency
             },
-            metadata: {
-                reference: metadataRef
-            }
+            metadata: metadata
         }
     };
 
@@ -398,6 +410,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     configForm.addEventListener('submit', initializeSdkFlow);
+
+    // Setup Custom Dynamic Metadata Rows
+    const addMetadataBtn = document.getElementById('btn-add-metadata');
+    const metadataContainer = document.getElementById('metadata-rows-container');
+
+    if (addMetadataBtn && metadataContainer) {
+        // Wire up existing pre-rendered remove buttons
+        const existingRemoveBtns = metadataContainer.querySelectorAll('.btn-remove-row');
+        existingRemoveBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.parentElement.remove();
+                log('[System] Custom metadata field removed.', 'system');
+            });
+        });
+
+        addMetadataBtn.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'metadata-row';
+            row.style.display = 'flex';
+            row.style.gap = '8px';
+            row.style.alignItems = 'center';
+            row.style.animation = 'fadeIn 0.2s ease';
+            
+            row.innerHTML = `
+                <input type="text" class="metadata-key" placeholder="Key" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                <input type="text" class="metadata-value" placeholder="Value" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                <button type="button" class="btn-remove-row" style="background: none; border: none; color: var(--error); font-size: 1.25rem; cursor: pointer; padding: 0 4px; line-height: 1;">×</button>
+            `;
+            
+            // Remove button handler
+            const removeBtn = row.querySelector('.btn-remove-row');
+            removeBtn.addEventListener('click', () => {
+                row.remove();
+                log('[System] Custom metadata field removed.', 'system');
+            });
+            
+            metadataContainer.appendChild(row);
+            log('[System] New custom metadata field added.', 'system');
+        });
+    }
     
     unmountBtn.addEventListener('click', () => {
         cleanupExistingSession();

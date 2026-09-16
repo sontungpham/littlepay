@@ -46,25 +46,47 @@
 
                 <!-- Automatic Token Fields -->
                 <div id="auto-token-fields">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="customerRef">Customer Reference</label>
-                            <input type="text" id="customerRef" value="1" placeholder="e.g. 1">
-                        </div>
-                        <div class="form-group">
-                            <label for="orderAmount">Amount (Minor Units)</label>
-                            <input type="text" id="orderAmount" value="811" placeholder="e.g. 811 (8.11)">
-                        </div>
+                    <div class="form-group">
+                        <label for="customerRef">Customer Reference</label>
+                        <input type="text" id="customerRef" value="1" placeholder="e.g. 1">
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label for="orderAmount">Amount (Minor Units)</label>
+                            <input type="text" id="orderAmount" value="811" placeholder="e.g. 811 (8.11)">
+                        </div>
+                        <div class="form-group">
                             <label for="orderCurrency">Currency</label>
                             <input type="text" id="orderCurrency" value="EUR" placeholder="e.g. EUR">
                         </div>
-                        <div class="form-group">
-                            <label for="metadataRef">Metadata Reference</label>
-                            <input type="text" id="metadataRef" value="test-Tung" placeholder="e.g. test-Tung">
+                    </div>
+
+                    <!-- Dynamic Metadata Section -->
+                    <div class="form-group" style="border-top: 1px dashed var(--border-color); padding-top: 16px; margin-top: 16px; margin-bottom: 20px;">
+                        <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.85rem;">
+                            <span>Custom Metadata Fields</span>
+                            <button type="button" id="btn-add-metadata" class="btn btn-secondary btn-sm" style="width: auto; padding: 6px 10px; font-size: 0.75rem;">+ Add Field</button>
+                        </label>
+                        <div id="metadata-rows-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                            <!-- Default Row 1: reference -->
+                            <div class="metadata-row" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" class="metadata-key" value="reference" placeholder="Key" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <input type="text" class="metadata-value" value="test-Tung" placeholder="Value" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <button type="button" class="btn-remove-row" style="background: none; border: none; color: var(--error); font-size: 1.25rem; cursor: pointer; padding: 0 4px; line-height: 1;">×</button>
+                            </div>
+                            <!-- Default Row 2: merchant_id -->
+                            <div class="metadata-row" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" class="metadata-key" value="merchant_id" placeholder="Key" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <input type="text" class="metadata-value" value="sandbox-merchant-demo" placeholder="Value" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <button type="button" class="btn-remove-row" style="background: none; border: none; color: var(--error); font-size: 1.25rem; cursor: pointer; padding: 0 4px; line-height: 1;">×</button>
+                            </div>
+                            <!-- Default Row 3: context -->
+                            <div class="metadata-row" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" class="metadata-key" value="context" placeholder="Key" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <input type="text" class="metadata-value" value="MIT-Registration" placeholder="Value" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                                <button type="button" class="btn-remove-row" style="background: none; border: none; color: var(--error); font-size: 1.25rem; cursor: pointer; padding: 0 4px; line-height: 1;">×</button>
+                            </div>
                         </div>
                     </div>
 
