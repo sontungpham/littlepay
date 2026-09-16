@@ -4,7 +4,7 @@ An interactive, high-fidelity engineering playground showcasing both **Inline Ja
 
 The application includes a zero-dependency local Node.js proxy server that reads sensitive API credentials securely from a **server-side configuration variable** (loaded from `env.local.json` which overrides `env.json`), bypassing browser CORS policies entirely while keeping your secret merchant key safe.
 
-![img.png](img.png)
+![img_1.png](img_1.png)
 ---
 
 ## 🚀 Key Features
